@@ -1,33 +1,13 @@
 [
   {
-    "id": "1",
-    "company": "Google",
-    "role": "Senior Frontend Engineer",
-    "jobLink": "https://careers.google.com",
-    "location": "Bangalore, India",
-    "dateApplied": "2025-01-15",
-    "status": "Interview",
-    "notes": "Technical round scheduled for next week"
-  },
-  {
     "id": "2",
-    "company": "Microsoft",
+    "company": "Google",
     "role": "Software Engineer II",
     "jobLink": "https://careers.microsoft.com",
     "location": "Hyderabad, India",
     "dateApplied": "2025-01-10",
     "status": "Assessment",
     "notes": "Online assessment completed"
-  },
-  {
-    "id": "3",
-    "company": "Amazon",
-    "role": "SDE-2",
-    "jobLink": "https://amazon.jobs",
-    "location": "Bangalore, India",
-    "dateApplied": "2025-01-20",
-    "status": "Applied",
-    "notes": "Applied through referral"
   },
   {
     "id": "4",
