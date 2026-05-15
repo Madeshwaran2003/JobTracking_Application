@@ -1,6 +1,16 @@
 import { Menu, Bell, User } from 'lucide-react';
 
-export default function Navbar({ onMenuToggle, searchQuery, setSearchQuery }) {
+const PAGE_TITLES = {
+  dashboard: { title: 'Dashboard', subtitle: 'Track and manage your job applications' },
+  applications: { title: 'Applications', subtitle: 'View and manage all your job applications' },
+  analytics: { title: 'Analytics', subtitle: 'Insights and trends from your job search' },
+  settings: { title: 'Settings', subtitle: 'Customize your JobTracker experience' },
+  help: { title: 'Help', subtitle: 'Learn how to use JobTracker effectively' },
+};
+
+export default function Navbar({ onMenuToggle, currentPage }) {
+  const pageInfo = PAGE_TITLES[currentPage] || PAGE_TITLES.dashboard;
+
   return (
     <header className="h-16 flex items-center justify-between px-4 lg:px-6 border-b border-glass-border bg-dark-800/50 backdrop-blur-xl sticky top-0 z-30">
       <div className="flex items-center gap-3">
@@ -11,8 +21,8 @@ export default function Navbar({ onMenuToggle, searchQuery, setSearchQuery }) {
           <Menu size={20} />
         </button>
         <div>
-          <h1 className="text-base font-semibold text-white">Dashboard</h1>
-          <p className="text-xs text-dark-400 hidden sm:block">Track and manage your job applications</p>
+          <h1 className="text-base font-semibold text-white">{pageInfo.title}</h1>
+          <p className="text-xs text-dark-400 hidden sm:block">{pageInfo.subtitle}</p>
         </div>
       </div>
 

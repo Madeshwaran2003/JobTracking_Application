@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
-export default function Layout({ children }) {
+export default function Layout({ children, currentPage, onNavigate }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : true
   );
@@ -20,11 +20,17 @@ export default function Layout({ children }) {
         />
       </div>
 
-      <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        currentPage={currentPage}
+        onNavigate={onNavigate}
+      />
 
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Navbar
           onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+          currentPage={currentPage}
         />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}

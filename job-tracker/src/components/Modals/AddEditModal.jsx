@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Building2, UserRound, Link, MapPin, Calendar, FileText, ChevronDown } from 'lucide-react';
-import { STATUS_OPTIONS } from '../../utils/constants';
+import { X, Building2, UserRound, Link, MapPin, Calendar, FileText, ChevronDown, Check } from 'lucide-react';
+import { STATUS_OPTIONS, STATUS_COLOR_MAP } from '../../utils/constants';
 
 const INITIAL_FORM = {
   company: '',
@@ -15,6 +15,8 @@ const INITIAL_FORM = {
 
 export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
   const [form, setForm] = useState(INITIAL_FORM);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const statusRef = useRef(null);
 
   useEffect(() => {
     if (editData) {
@@ -32,6 +34,17 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
     }
   }, [editData, isOpen]);
 
+  // Close status dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (statusRef.current && !statusRef.current.contains(e.target)) {
+        setStatusOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(form);
@@ -44,6 +57,8 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
 
   const inputClass =
     'w-full px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm text-dark-100 placeholder-dark-500 outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all duration-200 backdrop-blur-sm';
+
+  const currentStatusColors = STATUS_COLOR_MAP[form.status] || STATUS_COLOR_MAP['Applied'];
 
   return (
     <AnimatePresence>
@@ -155,23 +170,82 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
                 </div>
               </div>
 
-              {/* Status */}
-              <div>
+              {/* Custom Status Dropdown */}
+              <div ref={statusRef}>
                 <label className="flex items-center gap-1.5 text-xs font-medium text-dark-300 mb-1.5">
                   <ChevronDown size={12} />
                   Status
                 </label>
-                <select
-                  value={form.status}
-                  onChange={(e) => handleChange('status', e.target.value)}
-                  className={`${inputClass} appearance-none cursor-pointer`}
+                <button
+                  type="button"
+                  onClick={() => setStatusOpen(!statusOpen)}
+                  className="w-full flex items-center justify-between px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all duration-200 cursor-pointer"
                 >
-                  {STATUS_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="bg-dark-800 text-dark-100">
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  <span
+                    className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium"
+                    style={{
+                      backgroundColor: currentStatusColors.bg,
+                      color: currentStatusColors.text,
+                      border: `1px solid ${currentStatusColors.border}`,
+                    }}
+                  >
+                    <span
+                      className="w-1.5 h-1.5 rounded-full"
+                      style={{ backgroundColor: currentStatusColors.dot }}
+                    />
+                    {form.status}
+                  </span>
+                  <ChevronDown
+                    size={14}
+                    className={`text-dark-400 transition-transform duration-200 ${statusOpen ? 'rotate-180' : ''}`}
+                  />
+                </button>
+
+                <AnimatePresence>
+                  {statusOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute z-50 mt-1 w-[calc(100%-48px)] bg-dark-700 border border-glass-border rounded-xl shadow-xl overflow-hidden py-1"
+                    >
+                      {STATUS_OPTIONS.map((opt) => {
+                        const colors = STATUS_COLOR_MAP[opt.value];
+                        const isActive = form.status === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              handleChange('status', opt.value);
+                              setStatusOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-glass-hover transition-colors duration-150 ${
+                              isActive ? 'bg-glass' : ''
+                            }`}
+                          >
+                            <span
+                              className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium"
+                              style={{
+                                backgroundColor: colors.bg,
+                                color: colors.text,
+                                border: `1px solid ${colors.border}`,
+                              }}
+                            >
+                              <span
+                                className="w-1.5 h-1.5 rounded-full"
+                                style={{ backgroundColor: colors.dot }}
+                              />
+                              {opt.label}
+                            </span>
+                            {isActive && <Check size={14} className="text-accent-blue" />}
+                          </button>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Notes */}

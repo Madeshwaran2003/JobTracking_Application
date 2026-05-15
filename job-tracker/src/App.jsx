@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Plus, Filter, ArrowUpDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Filter } from 'lucide-react';
 import Layout from './components/Layout/Layout';
 import AnalyticsCards from './components/Dashboard/AnalyticsCards';
 import ApplicationTable from './components/Dashboard/ApplicationTable';
+import MobileCardList from './components/Dashboard/MobileCardList';
+import ApplicationDetail from './components/Dashboard/ApplicationDetail';
 import EmptyState from './components/Dashboard/EmptyState';
+import AnalyticsPage from './components/Dashboard/AnalyticsPage';
+import SettingsPage from './components/Dashboard/SettingsPage';
+import HelpPage from './components/Dashboard/HelpPage';
 import AddEditModal from './components/Modals/AddEditModal';
 import ConfirmDeleteModal from './components/Modals/ConfirmDeleteModal';
 import LoadingSpinner from './components/UI/LoadingSpinner';
@@ -33,10 +38,12 @@ export default function App() {
 
   const { toasts, addToast, removeToast } = useToast();
 
+  const [currentPage, setCurrentPage] = useState('dashboard');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedApp, setSelectedApp] = useState(null);
 
   const handleAdd = async (formData) => {
     try {
@@ -77,12 +84,25 @@ export default function App() {
     setDeleteTarget(app);
   };
 
-  return (
-    <Layout>
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'analytics':
+        return <AnalyticsPage stats={stats} applications={applications} />;
+      case 'settings':
+        return <SettingsPage />;
+      case 'help':
+        return <HelpPage />;
+      case 'applications':
+      case 'dashboard':
+      default:
+        return renderDashboard();
+    }
+  };
 
-      {/* Analytics Cards */}
-      <AnalyticsCards stats={stats} />
+  const renderDashboard = () => (
+    <>
+      {/* Analytics Cards - only on dashboard */}
+      {currentPage === 'dashboard' && <AnalyticsCards stats={stats} />}
 
       {/* Toolbar */}
       <motion.div
@@ -125,7 +145,7 @@ export default function App() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="hidden sm:flex items-center gap-1.5 px-3 py-2.5 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 hover:bg-glass-hover transition-all appearance-none cursor-pointer min-w-[140px]"
+            className="hidden sm:block px-3 py-2.5 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 hover:bg-glass-hover transition-all appearance-none cursor-pointer min-w-[140px]"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-dark-800">
@@ -149,38 +169,40 @@ export default function App() {
       </motion.div>
 
       {/* Mobile Filters */}
-      {showFilters && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="sm:hidden flex gap-2 mb-4"
-        >
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex-1 px-3 py-2 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 appearance-none cursor-pointer"
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="sm:hidden flex gap-2 mb-4"
           >
-            <option value="All" className="bg-dark-800">All Status</option>
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-dark-800">
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="flex-1 px-3 py-2 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 appearance-none cursor-pointer"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value} className="bg-dark-800">
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </motion.div>
-      )}
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="flex-1 px-3 py-2 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 appearance-none cursor-pointer"
+            >
+              <option value="All" className="bg-dark-800">All Status</option>
+              {STATUS_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-dark-800">
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="flex-1 px-3 py-2 bg-glass border border-glass-border rounded-xl text-xs font-medium text-dark-300 outline-none focus:border-accent-blue/50 appearance-none cursor-pointer"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value} className="bg-dark-800">
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Results count */}
       {applications.length > 0 && (
@@ -213,12 +235,45 @@ export default function App() {
       ) : applications.length === 0 && !searchQuery && statusFilter === 'All' ? (
         <EmptyState onAdd={() => setShowAddModal(true)} />
       ) : (
-        <ApplicationTable
-          applications={applications}
-          onEdit={openEdit}
-          onDelete={openDelete}
-        />
+        <>
+          {/* Desktop: Table view */}
+          <div className="hidden md:block">
+            <ApplicationTable
+              applications={applications}
+              onEdit={openEdit}
+              onDelete={openDelete}
+            />
+          </div>
+
+          {/* Mobile: Card view */}
+          <div className="md:hidden">
+            <MobileCardList
+              applications={applications}
+              onEdit={openEdit}
+              onDelete={openDelete}
+              onSelect={setSelectedApp}
+            />
+          </div>
+        </>
       )}
+    </>
+  );
+
+  return (
+    <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
+
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentPage}
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -10 }}
+          transition={{ duration: 0.2 }}
+        >
+          {renderPage()}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Modals */}
       <AddEditModal
@@ -240,6 +295,14 @@ export default function App() {
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         companyName={deleteTarget?.company}
+      />
+
+      {/* Mobile detail panel */}
+      <ApplicationDetail
+        application={selectedApp}
+        onClose={() => setSelectedApp(null)}
+        onEdit={openEdit}
+        onDelete={openDelete}
       />
     </Layout>
   );

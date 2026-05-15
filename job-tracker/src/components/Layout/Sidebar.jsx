@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Briefcase,
@@ -11,14 +10,14 @@ import {
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: true },
-  { icon: Briefcase, label: 'Applications', active: false },
-  { icon: BarChart3, label: 'Analytics', active: false },
-  { icon: Settings, label: 'Settings', active: false },
-  { icon: HelpCircle, label: 'Help', active: false },
+  { icon: LayoutDashboard, label: 'Dashboard', page: 'dashboard' },
+  { icon: Briefcase, label: 'Applications', page: 'applications' },
+  { icon: BarChart3, label: 'Analytics', page: 'analytics' },
+  { icon: Settings, label: 'Settings', page: 'settings' },
+  { icon: HelpCircle, label: 'Help', page: 'help' },
 ];
 
-export default function Sidebar({ collapsed, setCollapsed }) {
+export default function Sidebar({ collapsed, setCollapsed, currentPage, onNavigate }) {
   return (
     <>
       {/* Mobile overlay */}
@@ -70,40 +69,50 @@ export default function Sidebar({ collapsed, setCollapsed }) {
 
         {/* Navigation */}
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              className={`
-                w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
-                transition-all duration-200 group relative
-                ${item.active
-                  ? 'bg-accent-blue/10 text-accent-blue'
-                  : 'text-dark-300 hover:text-dark-100 hover:bg-glass'
-                }
-              `}
-            >
-              <item.icon
-                size={20}
-                className={`flex-shrink-0 ${item.active ? 'text-accent-blue' : 'text-dark-400 group-hover:text-dark-200'}`}
-              />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: 'auto' }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="whitespace-nowrap overflow-hidden"
-                  >
-                    {item.label}
-                  </motion.span>
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentPage === item.page;
+            return (
+              <button
+                key={item.label}
+                onClick={() => {
+                  onNavigate(item.page);
+                  // Close sidebar on mobile after navigation
+                  if (window.innerWidth < 1024) {
+                    setCollapsed(true);
+                  }
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
+                  transition-all duration-200 group relative
+                  ${isActive
+                    ? 'bg-accent-blue/10 text-accent-blue'
+                    : 'text-dark-300 hover:text-dark-100 hover:bg-glass'
+                  }
+                `}
+              >
+                <item.icon
+                  size={20}
+                  className={`flex-shrink-0 ${isActive ? 'text-accent-blue' : 'text-dark-400 group-hover:text-dark-200'}`}
+                />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: 'auto' }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="whitespace-nowrap overflow-hidden"
+                    >
+                      {item.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {isActive && (
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-accent-blue rounded-r-full" />
                 )}
-              </AnimatePresence>
-              {item.active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-accent-blue rounded-r-full" />
-              )}
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Collapse toggle - Desktop only */}
