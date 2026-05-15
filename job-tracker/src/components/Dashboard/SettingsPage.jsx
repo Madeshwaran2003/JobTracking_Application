@@ -3,16 +3,18 @@ import { motion } from 'framer-motion';
 import {
   Briefcase, Moon, Database, CheckCircle2, XCircle,
   Loader2, ExternalLink, Copy, Check, Trash2, Download,
-  Server, Shield, Zap
+  Server, Shield, Zap, UploadCloud
 } from 'lucide-react';
 import { isSupabaseConfigured, getSupabase } from '../../lib/supabase';
-import { getConnectionMode } from '../../services/api';
+import { addApplication, getConnectionMode } from '../../services/api';
 
 export default function SettingsPage() {
   const mode = getConnectionMode();
   const isConfigured = isSupabaseConfigured();
   const [testing, setTesting] = useState(false);
+  const [migrating, setMigrating] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [migrationResult, setMigrationResult] = useState(null);
   const [copied, setCopied] = useState(false);
 
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
@@ -106,6 +108,33 @@ CREATE TRIGGER update_applications_updated_at
       a.download = 'job-tracker-export.json';
       a.click();
       URL.revokeObjectURL(url);
+    }
+  };
+
+  const migrateLocalData = async () => {
+    setMigrating(true);
+    setMigrationResult(null);
+    try {
+      const stored = localStorage.getItem('job-tracker-applications');
+      const applications = stored ? JSON.parse(stored) : [];
+
+      if (!applications.length) {
+        setMigrationResult({ success: false, message: 'No local data found to migrate.' });
+        return;
+      }
+
+      for (const application of applications) {
+        await addApplication(application);
+      }
+
+      setMigrationResult({
+        success: true,
+        message: `Migrated ${applications.length} application${applications.length === 1 ? '' : 's'} to Supabase.`,
+      });
+    } catch (err) {
+      setMigrationResult({ success: false, message: err.message });
+    } finally {
+      setMigrating(false);
     }
   };
 
@@ -339,6 +368,16 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...`}
           description="Manage your application data."
         >
           <div className="flex items-center gap-3">
+            {isConfigured && (
+              <button
+                onClick={migrateLocalData}
+                disabled={migrating}
+                className="flex items-center gap-1.5 px-4 py-2 bg-accent-purple/10 border border-accent-purple/20 rounded-xl text-sm font-medium text-accent-purple hover:bg-accent-purple/20 transition-all disabled:opacity-50"
+              >
+                {migrating ? <Loader2 size={14} className="animate-spin" /> : <UploadCloud size={14} />}
+                {migrating ? 'Migrating...' : 'Migrate Local to Supabase'}
+              </button>
+            )}
             <button
               onClick={clearAllData}
               className="flex items-center gap-1.5 px-4 py-2 bg-red-500/10 border border-red-500/20 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/20 transition-all"
@@ -354,6 +393,11 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...`}
               Export JSON
             </button>
           </div>
+          {migrationResult && (
+            <p className={`text-xs mt-3 ${migrationResult.success ? 'text-green-400' : 'text-red-400'}`}>
+              {migrationResult.message}
+            </p>
+          )}
           <p className="text-xs text-dark-400 mt-3">
             Current storage: <span className="text-dark-200 font-medium capitalize">{mode === 'supabase' ? 'Supabase Cloud' : 'Browser localStorage'}</span>
           </p>

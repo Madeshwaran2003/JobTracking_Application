@@ -16,6 +16,7 @@ const INITIAL_FORM = {
 export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const statusRef = useRef(null);
 
   useEffect(() => {
@@ -45,10 +46,15 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(form);
-    onClose();
+    setSubmitting(true);
+    try {
+      await onSubmit(form);
+      onClose();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (field, value) => {
@@ -268,15 +274,17 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
                 <button
                   type="button"
                   onClick={onClose}
+                  disabled={submitting}
                   className="flex-1 px-4 py-2.5 bg-dark-600 hover:bg-dark-500 border border-glass-border rounded-xl text-sm font-medium text-dark-200 transition-all duration-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-xl text-sm font-medium text-white shadow-lg shadow-accent-blue/20 transition-all duration-200"
+                  disabled={submitting}
+                  className="flex-1 px-4 py-2.5 bg-gradient-to-r from-accent-blue to-accent-purple hover:from-accent-blue/90 hover:to-accent-purple/90 rounded-xl text-sm font-medium text-white shadow-lg shadow-accent-blue/20 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {editData ? 'Save Changes' : 'Add Application'}
+                  {submitting ? 'Saving...' : editData ? 'Save Changes' : 'Add Application'}
                 </button>
               </div>
             </form>

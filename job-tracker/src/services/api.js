@@ -96,7 +96,7 @@ function transformFromSupabase(row) {
     dateApplied: row.date_applied,
     location: row.location || '',
     salary: row.salary || '',
-    url: row.url || '',
+    jobLink: row.url || '',
     notes: row.notes || '',
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -111,6 +111,7 @@ function transformToSupabase(app) {
   if (app.dateApplied !== undefined) row.date_applied = app.dateApplied || null;
   if (app.location !== undefined) row.location = app.location || '';
   if (app.salary !== undefined) row.salary = app.salary || '';
+  if (app.jobLink !== undefined) row.url = app.jobLink || '';
   if (app.url !== undefined) row.url = app.url || '';
   if (app.notes !== undefined) row.notes = app.notes || '';
   return row;

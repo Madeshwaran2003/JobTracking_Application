@@ -50,7 +50,8 @@ export default function App() {
       await addApp(formData);
       addToast('Application added successfully!', 'success');
     } catch (err) {
-      addToast('Failed to add application.', 'error');
+      addToast(`Failed to add application: ${err.message}`, 'error');
+      throw err;
     }
   };
 
@@ -60,7 +61,8 @@ export default function App() {
       await updateApp(editData.id, formData);
       addToast('Application updated successfully!', 'success');
     } catch (err) {
-      addToast('Failed to update application.', 'error');
+      addToast(`Failed to update application: ${err.message}`, 'error');
+      throw err;
     }
     setEditData(null);
   };
