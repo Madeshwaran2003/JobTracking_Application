@@ -1,74 +1,144 @@
-import { API_BASE_URL } from '../utils/constants';
+import { getSupabase, isSupabaseConfigured } from '../lib/supabase';
 
-const API_URL = API_BASE_URL;
+// ============================================
+// Supabase API (primary) + localStorage fallback
+// ============================================
 
-async function apiRequest(url, options = {}) {
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'text/plain',
-        ...options.headers,
-      },
-    });
+// ---- Supabase Operations ----
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+async function supabaseFetchApplications() {
+  const supabase = getSupabase();
+  if (!supabase) return null;
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('API request failed:', error);
-    throw error;
-  }
+  const { data, error } = await supabase
+    .from('applications')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+
+  // Transform Supabase columns to app's expected format
+  return (data || []).map(transformFromSupabase);
 }
 
+async function supabaseAddApplication(application) {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const row = transformToSupabase(application);
+
+  const { data, error } = await supabase
+    .from('applications')
+    .insert([row])
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return transformFromSupabase(data);
+}
+
+async function supabaseUpdateApplication(id, updates) {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const row = transformToSupabase(updates);
+
+  const { data, error } = await supabase
+    .from('applications')
+    .update(row)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) throw error;
+
+  return transformFromSupabase(data);
+}
+
+async function supabaseDeleteApplication(id) {
+  const supabase = getSupabase();
+  if (!supabase) return null;
+
+  const { error } = await supabase
+    .from('applications')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+
+  return { success: true };
+}
+
+// ---- Data Transformers ----
+// Supabase uses: id (uuid), date_applied, created_at, updated_at
+// App expects:   id, dateApplied, createdAt, updatedAt
+
+function transformFromSupabase(row) {
+  return {
+    id: row.id,
+    company: row.company,
+    role: row.role,
+    status: row.status,
+    dateApplied: row.date_applied,
+    location: row.location || '',
+    salary: row.salary || '',
+    url: row.url || '',
+    notes: row.notes || '',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function transformToSupabase(app) {
+  const row = {};
+  if (app.company !== undefined) row.company = app.company;
+  if (app.role !== undefined) row.role = app.role;
+  if (app.status !== undefined) row.status = app.status;
+  if (app.dateApplied !== undefined) row.date_applied = app.dateApplied || null;
+  if (app.location !== undefined) row.location = app.location || '';
+  if (app.salary !== undefined) row.salary = app.salary || '';
+  if (app.url !== undefined) row.url = app.url || '';
+  if (app.notes !== undefined) row.notes = app.notes || '';
+  return row;
+}
+
+// ---- Public API ----
+
 export async function fetchApplications() {
-  if (!API_URL) {
-    return getLocalApplications();
+  if (isSupabaseConfigured()) {
+    return supabaseFetchApplications();
   }
-  const url = `${API_URL}?action=read`;
-  const data = await apiRequest(url);
-  return data.records || [];
+  return getLocalApplications();
 }
 
 export async function addApplication(application) {
-  if (!API_URL) {
-    return addLocalApplication(application);
+  if (isSupabaseConfigured()) {
+    return supabaseAddApplication(application);
   }
-  const url = `${API_URL}?action=create`;
-  const data = await apiRequest(url, {
-    method: 'POST',
-    body: JSON.stringify(application),
-  });
-  return data.record;
+  return addLocalApplication(application);
 }
 
 export async function updateApplication(id, application) {
-  if (!API_URL) {
-    return updateLocalApplication(id, application);
+  if (isSupabaseConfigured()) {
+    return supabaseUpdateApplication(id, application);
   }
-  const url = `${API_URL}?action=update&id=${id}`;
-  const data = await apiRequest(url, {
-    method: 'PUT',
-    body: JSON.stringify(application),
-  });
-  return data.record;
+  return updateLocalApplication(id, application);
 }
 
 export async function deleteApplication(id) {
-  if (!API_URL) {
-    return deleteLocalApplication(id);
+  if (isSupabaseConfigured()) {
+    return supabaseDeleteApplication(id);
   }
-  const url = `${API_URL}?action=delete&id=${id}`;
-  const data = await apiRequest(url, {
-    method: 'DELETE',
-  });
-  return data;
+  return deleteLocalApplication(id);
 }
 
-// ---- Local Storage Fallback (when no Google Apps Script URL is provided) ----
+export function getConnectionMode() {
+  if (isSupabaseConfigured()) return 'supabase';
+  return 'local';
+}
+
+// ---- Local Storage Fallback ----
 
 const STORAGE_KEY = 'job-tracker-applications';
 
@@ -86,6 +156,8 @@ function addLocalApplication(application) {
   const newApp = {
     ...application,
     id: Date.now().toString(36) + Math.random().toString(36).substring(2),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   };
   apps.unshift(newApp);
   saveLocalApplications(apps);
@@ -96,7 +168,7 @@ function updateLocalApplication(id, updates) {
   const apps = getLocalApplications();
   const index = apps.findIndex((app) => app.id === id);
   if (index !== -1) {
-    apps[index] = { ...apps[index], ...updates };
+    apps[index] = { ...apps[index], ...updates, updatedAt: new Date().toISOString() };
     saveLocalApplications(apps);
     return apps[index];
   }
