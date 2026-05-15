@@ -15,9 +15,11 @@ async function supabaseFetchApplications() {
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('[Supabase] Fetch error:', error.message);
+    throw new Error(error.message);
+  }
 
-  // Transform Supabase columns to app's expected format
   return (data || []).map(transformFromSupabase);
 }
 
@@ -26,6 +28,7 @@ async function supabaseAddApplication(application) {
   if (!supabase) return null;
 
   const row = transformToSupabase(application);
+  console.log('[Supabase] Adding application:', row);
 
   const { data, error } = await supabase
     .from('applications')
@@ -33,7 +36,10 @@ async function supabaseAddApplication(application) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('[Supabase] Insert error:', error.message, error.details);
+    throw new Error(error.message);
+  }
 
   return transformFromSupabase(data);
 }
@@ -43,6 +49,7 @@ async function supabaseUpdateApplication(id, updates) {
   if (!supabase) return null;
 
   const row = transformToSupabase(updates);
+  console.log('[Supabase] Updating application:', id, row);
 
   const { data, error } = await supabase
     .from('applications')
@@ -51,7 +58,10 @@ async function supabaseUpdateApplication(id, updates) {
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('[Supabase] Update error:', error.message);
+    throw new Error(error.message);
+  }
 
   return transformFromSupabase(data);
 }
@@ -65,7 +75,10 @@ async function supabaseDeleteApplication(id) {
     .delete()
     .eq('id', id);
 
-  if (error) throw error;
+  if (error) {
+    console.error('[Supabase] Delete error:', error.message);
+    throw new Error(error.message);
+  }
 
   return { success: true };
 }
@@ -109,6 +122,7 @@ export async function fetchApplications() {
   if (isSupabaseConfigured()) {
     return supabaseFetchApplications();
   }
+  console.log('[API] Supabase not configured, using localStorage');
   return getLocalApplications();
 }
 
@@ -116,6 +130,7 @@ export async function addApplication(application) {
   if (isSupabaseConfigured()) {
     return supabaseAddApplication(application);
   }
+  console.log('[API] Supabase not configured, using localStorage');
   return addLocalApplication(application);
 }
 
