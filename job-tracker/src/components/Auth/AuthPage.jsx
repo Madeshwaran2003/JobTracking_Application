@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Lock, Mail, Loader2 } from 'lucide-react';
 
-export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured = true }) {
+export default function AuthPage({ onSignIn, onSignUp, onResetPassword, authError, isConfigured = true }) {
   const [mode, setMode] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -10,6 +10,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
   const [submitting, setSubmitting] = useState(false);
 
   const isSignUp = mode === 'signup';
+  const isForgot = mode === 'forgot';
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -22,7 +23,11 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
     setMessage('');
 
     try {
-      if (isSignUp) {
+      if (isForgot) {
+        if (onResetPassword) await onResetPassword(email);
+        setMessage('Password reset email sent. Check your inbox.');
+        setMode('signin');
+      } else if (isSignUp) {
         await onSignUp({ email, password });
         setMessage('Account created. Check your email if confirmation is enabled, then sign in.');
         setMode('signin');
@@ -56,7 +61,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
             <div>
               <h1 className="text-lg font-semibold text-dark-100">ApplyNest</h1>
               <p className="text-xs text-dark-400">
-                {isConfigured ? 'Sign in to your private tracker' : 'Supabase configuration required'}
+                {isConfigured ? (isForgot ? 'Reset your password' : 'Sign in to your private tracker') : 'Supabase configuration required'}
               </p>
             </div>
           </div>
@@ -69,7 +74,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
                 setMessage('');
               }}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                !isSignUp ? 'bg-accent-blue text-white' : 'text-dark-300 hover:text-dark-100'
+                mode === 'signin' ? 'bg-accent-blue text-white' : 'text-dark-300 hover:text-dark-100'
               }`}
             >
               Sign In
@@ -81,7 +86,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
                 setMessage('');
               }}
               className={`rounded-lg px-3 py-2 text-sm font-medium transition-all ${
-                isSignUp ? 'bg-accent-blue text-white' : 'text-dark-300 hover:text-dark-100'
+                mode === 'signup' ? 'bg-accent-blue text-white' : 'text-dark-300 hover:text-dark-100'
               }`}
             >
               Sign Up
@@ -105,22 +110,38 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
               />
             </label>
 
-            <label className="block">
-              <span className="flex items-center gap-1.5 text-xs font-medium text-dark-300 mb-1.5">
-                <Lock size={12} />
-                Password
-              </span>
-              <input
-                type="password"
-                required
-                minLength={6}
-                autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                className="w-full px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm text-dark-100 placeholder-dark-500 outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
-                placeholder="Minimum 6 characters"
-              />
-            </label>
+            {!isForgot && (
+              <label className="block">
+                <span className="flex items-center justify-between text-xs font-medium text-dark-300 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Lock size={12} />
+                    Password
+                  </span>
+                  {!isSignUp && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode('forgot');
+                        setMessage('');
+                      }}
+                      className="text-accent-blue hover:text-accent-blue/80 transition-colors"
+                    >
+                      Forgot?
+                    </button>
+                  )}
+                </span>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm text-dark-100 placeholder-dark-500 outline-none focus:border-accent-blue/50 focus:ring-1 focus:ring-accent-blue/20 transition-all"
+                  placeholder="Minimum 6 characters"
+                />
+              </label>
+            )}
 
             {!isConfigured && (
               <p className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
@@ -140,7 +161,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured =
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-sm font-medium text-white shadow-lg shadow-accent-blue/20 transition-all disabled:opacity-60"
             >
               {submitting && <Loader2 size={14} className="animate-spin" />}
-              {isSignUp ? 'Create Account' : 'Sign In'}
+              {isForgot ? 'Send Reset Link' : isSignUp ? 'Create Account' : 'Sign In'}
             </button>
           </form>
         </motion.section>

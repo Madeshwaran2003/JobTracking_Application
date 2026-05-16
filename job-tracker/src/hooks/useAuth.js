@@ -68,6 +68,16 @@ export function useAuth() {
     if (error) throw new Error(error.message);
   };
 
+  const resetPassword = async (email) => {
+    const supabase = getSupabase();
+    if (!supabase) throw new Error('Supabase is not configured.');
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    if (error) throw new Error(error.message);
+  };
+
   return {
     user,
     authLoading,
@@ -76,5 +86,6 @@ export function useAuth() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
   };
 }

@@ -30,6 +30,7 @@ export default function App() {
     signIn,
     signUp,
     signOut,
+    resetPassword,
   } = useAuth();
 
   const {
@@ -72,7 +73,7 @@ export default function App() {
   }
 
   if (!isAuthEnabled || !user) {
-    return <AuthPage onSignIn={signIn} onSignUp={signUp} authError={authError} isConfigured={isAuthEnabled} />;
+    return <AuthPage onSignIn={signIn} onSignUp={signUp} onResetPassword={resetPassword} authError={authError} isConfigured={isAuthEnabled} />;
   }
 
   const handleAdd = async (formData) => {
