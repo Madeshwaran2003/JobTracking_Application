@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Briefcase, Lock, Mail, Loader2 } from 'lucide-react';
 
-export default function AuthPage({ onSignIn, onSignUp, authError }) {
+export default function AuthPage({ onSignIn, onSignUp, authError, isConfigured = true }) {
   const [mode, setMode] = useState('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -13,6 +13,11 @@ export default function AuthPage({ onSignIn, onSignUp, authError }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!isConfigured) {
+      setMessage('Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to job-tracker/.env, then restart the dev server.');
+      return;
+    }
+
     setSubmitting(true);
     setMessage('');
 
@@ -50,7 +55,9 @@ export default function AuthPage({ onSignIn, onSignUp, authError }) {
             </div>
             <div>
               <h1 className="text-lg font-semibold text-dark-100">ApplyNest</h1>
-              <p className="text-xs text-dark-400">Sign in to your private tracker</p>
+              <p className="text-xs text-dark-400">
+                {isConfigured ? 'Sign in to your private tracker' : 'Supabase configuration required'}
+              </p>
             </div>
           </div>
 
@@ -115,6 +122,12 @@ export default function AuthPage({ onSignIn, onSignUp, authError }) {
               />
             </label>
 
+            {!isConfigured && (
+              <p className="rounded-xl border border-yellow-500/20 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
+                Add your Supabase URL and anon key in <span className="font-mono">job-tracker/.env</span>, then restart localhost.
+              </p>
+            )}
+
             {message && (
               <p className="rounded-xl border border-glass-border bg-dark-700/35 px-3 py-2 text-xs text-dark-300">
                 {message}
@@ -123,7 +136,7 @@ export default function AuthPage({ onSignIn, onSignUp, authError }) {
 
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !isConfigured}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue to-accent-purple text-sm font-medium text-white shadow-lg shadow-accent-blue/20 transition-all disabled:opacity-60"
             >
               {submitting && <Loader2 size={14} className="animate-spin" />}

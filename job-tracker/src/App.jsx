@@ -71,8 +71,8 @@ export default function App() {
     );
   }
 
-  if (isAuthEnabled && !user) {
-    return <AuthPage onSignIn={signIn} onSignUp={signUp} authError={authError} />;
+  if (!isAuthEnabled || !user) {
+    return <AuthPage onSignIn={signIn} onSignUp={signUp} authError={authError} isConfigured={isAuthEnabled} />;
   }
 
   const handleAdd = async (formData) => {

@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Briefcase, Palette, Database, CheckCircle2, XCircle,
-  Loader2, ExternalLink, Copy, Check, Trash2, Download,
+  Briefcase, Palette, CheckCircle2, XCircle,
+  Loader2, Trash2, Download,
   Server, Shield, Zap, UploadCloud
 } from 'lucide-react';
 import { isSupabaseConfigured, getSupabase } from '../../lib/supabase';
@@ -48,7 +48,6 @@ export default function SettingsPage({ theme = 'midnight', onThemeChange }) {
   const [migrating, setMigrating] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [migrationResult, setMigrationResult] = useState(null);
-  const [copied, setCopied] = useState(false);
 
   const testConnection = async () => {
     setTesting(true);
@@ -76,74 +75,6 @@ export default function SettingsPage({ theme = 'midnight', onThemeChange }) {
     } finally {
       setTesting(false);
     }
-  };
-
-  const copySQL = () => {
-    navigator.clipboard.writeText(`-- Job Application Tracker - Supabase Schema
-
-CREATE TABLE IF NOT EXISTS applications (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  company TEXT NOT NULL,
-  role TEXT NOT NULL,
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  status TEXT NOT NULL DEFAULT 'Applied',
-  date_applied DATE,
-  location TEXT,
-  salary TEXT,
-  url TEXT,
-  notes TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE applications
-  ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
-
-CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
-CREATE INDEX IF NOT EXISTS idx_applications_date ON applications(date_applied DESC);
-CREATE INDEX IF NOT EXISTS idx_applications_company ON applications(company);
-CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
-
-ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Allow full access to applications" ON applications;
-DROP POLICY IF EXISTS "Users can view own applications" ON applications;
-DROP POLICY IF EXISTS "Users can insert own applications" ON applications;
-DROP POLICY IF EXISTS "Users can update own applications" ON applications;
-DROP POLICY IF EXISTS "Users can delete own applications" ON applications;
-
-CREATE POLICY "Users can view own applications" ON applications
-  FOR SELECT TO authenticated
-  USING ((SELECT auth.uid()) = user_id);
-
-CREATE POLICY "Users can insert own applications" ON applications
-  FOR INSERT TO authenticated
-  WITH CHECK ((SELECT auth.uid()) = user_id);
-
-CREATE POLICY "Users can update own applications" ON applications
-  FOR UPDATE TO authenticated
-  USING ((SELECT auth.uid()) = user_id)
-  WITH CHECK ((SELECT auth.uid()) = user_id);
-
-CREATE POLICY "Users can delete own applications" ON applications
-  FOR DELETE TO authenticated
-  USING ((SELECT auth.uid()) = user_id);
-
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS update_applications_updated_at ON applications;
-CREATE TRIGGER update_applications_updated_at
-  BEFORE UPDATE ON applications
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();`);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   const clearAllData = () => {
@@ -269,87 +200,6 @@ CREATE TRIGGER update_applications_updated_at
             )}
           </div>
         </SettingsCard>
-
-        {/* Setup Guide */}
-        {!isConfigured && (
-          <SettingsCard
-            icon={Database}
-            title="Setup Guide — Connect Supabase in 3 Steps"
-            description="Follow these steps to connect your app to a real cloud database."
-            accent="blue"
-          >
-            <div className="space-y-5">
-              {/* Step 1 */}
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent-blue/20 flex items-center justify-center text-xs font-bold text-accent-blue">
-                  1
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-dark-200">Create a Supabase Project</p>
-                  <p className="text-xs text-dark-400 mt-1">
-                    Go to{' '}
-                    <a
-                      href="https://supabase.com/dashboard"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-accent-blue hover:underline inline-flex items-center gap-0.5"
-                    >
-                      supabase.com/dashboard <ExternalLink size={10} />
-                    </a>
-                    {' '}and create a new project (free tier). Give it a name like "Job Tracker" and set a database password.
-                  </p>
-                </div>
-              </div>
-
-              {/* Step 2 */}
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent-blue/20 flex items-center justify-center text-xs font-bold text-accent-blue">
-                  2
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-dark-200">Run the SQL Schema</p>
-                  <p className="text-xs text-dark-400 mt-1">
-                    In your Supabase dashboard, go to <strong className="text-dark-300">SQL Editor</strong>,
-                    paste the schema below, and click <strong className="text-dark-300">Run</strong>. This creates
-                    the applications table with proper indexes and security policies.
-                  </p>
-                  <button
-                    onClick={copySQL}
-                    className="mt-2 flex items-center gap-1.5 px-3 py-1.5 bg-glass border border-glass-border rounded-lg text-xs font-medium text-dark-200 hover:bg-glass-hover transition-all"
-                  >
-                    {copied ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-                    {copied ? 'Copied!' : 'Copy SQL Schema'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Step 3 */}
-              <div className="flex gap-3">
-                <div className="flex-shrink-0 w-7 h-7 rounded-full bg-accent-blue/20 flex items-center justify-center text-xs font-bold text-accent-blue">
-                  3
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-dark-200">Add Environment Variables</p>
-                  <p className="text-xs text-dark-400 mt-1">
-                    In your Supabase dashboard, go to <strong className="text-dark-300">Settings → API</strong>.
-                    Copy the <strong className="text-dark-300">Project URL</strong> and <strong className="text-dark-300">anon public</strong> key,
-                    then add them to your <code className="text-accent-blue bg-dark-700/50 px-1.5 py-0.5 rounded">.env</code> file:
-                  </p>
-                  <div className="mt-2 p-3 bg-dark-900 rounded-xl border border-glass-border">
-                    <pre className="text-xs text-dark-200 font-mono whitespace-pre-wrap">
-{`VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...`}
-                    </pre>
-                  </div>
-                  <p className="text-xs text-dark-400 mt-2">
-                    After updating the <code className="text-accent-blue bg-dark-700/50 px-1.5 py-0.5 rounded">.env</code> file,
-                    restart the dev server for changes to take effect.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </SettingsCard>
-        )}
 
         {/* Benefits Card */}
         {!isConfigured && (
