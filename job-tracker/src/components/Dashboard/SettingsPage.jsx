@@ -1,14 +1,41 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Briefcase, Moon, Database, CheckCircle2, XCircle,
+  Briefcase, Palette, Database, CheckCircle2, XCircle,
   Loader2, ExternalLink, Copy, Check, Trash2, Download,
   Server, Shield, Zap, UploadCloud
 } from 'lucide-react';
 import { isSupabaseConfigured, getSupabase } from '../../lib/supabase';
 import { addApplication, getConnectionMode } from '../../services/api';
 
-export default function SettingsPage() {
+const THEMES = [
+  {
+    id: 'midnight',
+    name: 'Midnight',
+    description: 'Deep dark dashboard with blue and violet accents.',
+    swatches: ['#0a0a0f', '#3b82f6', '#8b5cf6', '#22c55e'],
+  },
+  {
+    id: 'daylight',
+    name: 'Daylight',
+    description: 'Clean light workspace with crisp contrast.',
+    swatches: ['#f7fafc', '#2563eb', '#7c3aed', '#059669'],
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    description: 'Calm green workspace with teal and amber details.',
+    swatches: ['#07130f', '#14b8a6', '#84cc16', '#f59e0b'],
+  },
+  {
+    id: 'sunrise',
+    name: 'Sunrise',
+    description: 'Warm dark workspace with rose and amber accents.',
+    swatches: ['#150d12', '#e11d48', '#f97316', '#06b6d4'],
+  },
+];
+
+export default function SettingsPage({ theme = 'midnight', onThemeChange }) {
   const mode = getConnectionMode();
   const isConfigured = isSupabaseConfigured();
   const [testing, setTesting] = useState(false);
@@ -16,9 +43,6 @@ export default function SettingsPage() {
   const [testResult, setTestResult] = useState(null);
   const [migrationResult, setMigrationResult] = useState(null);
   const [copied, setCopied] = useState(false);
-
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-  const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
   const testConnection = async () => {
     setTesting(true);
@@ -183,30 +207,11 @@ CREATE TRIGGER update_applications_updated_at
               )}
             </div>
 
-            {/* Config Values */}
-            <div className="space-y-2.5">
-              <div>
-                <label className="text-xs font-medium text-dark-300 mb-1.5 block">
-                  VITE_SUPABASE_URL
-                </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={supabaseUrl || 'Not set'}
-                  className="w-full px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm text-dark-200 outline-none font-mono"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-medium text-dark-300 mb-1.5 block">
-                  VITE_SUPABASE_ANON_KEY
-                </label>
-                <input
-                  type="text"
-                  readOnly
-                  value={supabaseKey ? `${supabaseKey.substring(0, 20)}...${supabaseKey.substring(supabaseKey.length - 8)}` : 'Not set'}
-                  className="w-full px-3.5 py-2.5 bg-dark-700/50 border border-glass-border rounded-xl text-sm text-dark-200 outline-none font-mono"
-                />
-              </div>
+            <div className="rounded-xl border border-glass-border bg-dark-700/35 px-4 py-3">
+              <p className="text-sm font-medium text-dark-100">Credentials are hidden</p>
+              <p className="text-xs text-dark-400 mt-1">
+                Supabase environment values are used by the app but are not shown on this screen.
+              </p>
             </div>
 
             {/* Test Connection Button */}
@@ -346,18 +351,45 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...`}
 
         {/* Appearance */}
         <SettingsCard
-          icon={Moon}
+          icon={Palette}
           title="Appearance"
-          description="Customize the look and feel of your dashboard."
+          description="Choose a theme for your dashboard."
         >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-dark-200">Dark Mode</p>
-              <p className="text-xs text-dark-400">Dark theme is enabled by default</p>
-            </div>
-            <div className="w-10 h-6 bg-accent-blue rounded-full flex items-center px-0.5">
-              <div className="w-5 h-5 bg-white rounded-full ml-auto" />
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {THEMES.map((item) => {
+              const selected = theme === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onThemeChange?.(item.id)}
+                  className={`text-left rounded-xl border p-3 transition-all ${
+                    selected
+                      ? 'border-accent-blue bg-accent-blue/10'
+                      : 'border-glass-border bg-dark-700/35 hover:bg-glass-hover'
+                  }`}
+                  aria-pressed={selected}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-dark-100">{item.name}</p>
+                      <p className="text-xs text-dark-400 mt-1">{item.description}</p>
+                    </div>
+                    {selected && <CheckCircle2 size={16} className="text-accent-blue flex-shrink-0" />}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-3">
+                    {item.swatches.map((color) => (
+                      <span
+                        key={color}
+                        className="w-5 h-5 rounded-full border border-white/20"
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </SettingsCard>
 
@@ -435,7 +467,7 @@ function SettingsCard({ icon: Icon, title, description, children, accent = 'blue
           <Icon size={16} />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-white">{title}</h3>
+          <h3 className="text-sm font-semibold text-dark-100">{title}</h3>
           <p className="text-xs text-dark-400 mt-0.5">{description}</p>
         </div>
       </div>

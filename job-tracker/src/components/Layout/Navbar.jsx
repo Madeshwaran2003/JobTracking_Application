@@ -21,7 +21,7 @@ export default function Navbar({ onMenuToggle, currentPage }) {
           <Menu size={20} />
         </button>
         <div>
-          <h1 className="text-base font-semibold text-white">{pageInfo.title}</h1>
+          <h1 className="text-base font-semibold text-dark-100">{pageInfo.title}</h1>
           <p className="text-xs text-dark-400 hidden sm:block">{pageInfo.subtitle}</p>
         </div>
       </div>

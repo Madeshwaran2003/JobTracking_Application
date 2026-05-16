@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Filter } from 'lucide-react';
 import Layout from './components/Layout/Layout';
@@ -44,6 +44,12 @@ export default function App() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedApp, setSelectedApp] = useState(null);
+  const [theme, setTheme] = useState(() => localStorage.getItem('job-tracker-theme') || 'midnight');
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem('job-tracker-theme', theme);
+  }, [theme]);
 
   const handleAdd = async (formData) => {
     try {
@@ -72,7 +78,7 @@ export default function App() {
     try {
       await deleteApp(deleteTarget.id);
       addToast(`Deleted ${deleteTarget.company || 'application'}`, 'success');
-    } catch (err) {
+    } catch {
       addToast('Failed to delete application.', 'error');
     }
     setDeleteTarget(null);
@@ -91,7 +97,7 @@ export default function App() {
       case 'analytics':
         return <AnalyticsPage stats={stats} applications={applications} />;
       case 'settings':
-        return <SettingsPage />;
+        return <SettingsPage theme={theme} onThemeChange={setTheme} />;
       case 'help':
         return <HelpPage />;
       case 'applications':

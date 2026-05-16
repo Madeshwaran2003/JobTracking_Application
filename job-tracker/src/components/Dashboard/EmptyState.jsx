@@ -19,7 +19,7 @@ export default function EmptyState({ onAdd }) {
         <div className="absolute top-1/2 -right-4 w-2 h-2 rounded-full bg-accent-green/30 animate-pulse" style={{ animationDelay: '0.5s' }} />
       </div>
 
-      <h3 className="text-lg font-semibold text-white mb-2">No applications yet</h3>
+      <h3 className="text-lg font-semibold text-dark-100 mb-2">No applications yet</h3>
       <p className="text-sm text-dark-400 text-center max-w-md mb-6">
         Start tracking your job applications by adding your first one. Keep everything organized in one place — from applied to offer received.
       </p>

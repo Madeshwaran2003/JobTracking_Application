@@ -41,7 +41,7 @@ export default function ApplicationDetail({ application, onClose, onEdit, onDele
         {/* Header */}
         <div className="sticky top-0 z-10 bg-dark-800/90 backdrop-blur-xl border-b border-glass-border px-5 py-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-white">Application Details</h3>
+            <h3 className="text-base font-semibold text-dark-100">Application Details</h3>
             <button
               onClick={onClose}
               className="p-1.5 rounded-lg text-dark-400 hover:text-dark-200 hover:bg-glass transition-all duration-200"
@@ -66,7 +66,7 @@ export default function ApplicationDetail({ application, onClose, onEdit, onDele
                 {(app.company || '?')[0].toUpperCase()}
               </div>
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-white truncate">{app.company || '—'}</h2>
+                <h2 className="text-lg font-bold text-dark-100 truncate">{app.company || '—'}</h2>
                 <p className="text-sm text-dark-200 truncate">{app.role || '—'}</p>
                 <div className="mt-2">
                   <StatusBadge status={app.status} />

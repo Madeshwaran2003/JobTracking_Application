@@ -51,7 +51,7 @@ export default function AnalyticsPage({ stats, applications }) {
 
       {/* Status breakdown */}
       <div className="rounded-2xl border border-glass-border bg-glass backdrop-blur-xl p-6 mb-6">
-        <h3 className="text-sm font-semibold text-white mb-4">Status Breakdown</h3>
+        <h3 className="text-sm font-semibold text-dark-100 mb-4">Status Breakdown</h3>
         <div className="space-y-3">
           {statusCounts.map((item) => {
             const colors = STATUS_COLOR_MAP[item.value];
@@ -80,7 +80,7 @@ export default function AnalyticsPage({ stats, applications }) {
 
       {/* Recent activity */}
       <div className="rounded-2xl border border-glass-border bg-glass backdrop-blur-xl p-6">
-        <h3 className="text-sm font-semibold text-white mb-4">Recent Applications</h3>
+        <h3 className="text-sm font-semibold text-dark-100 mb-4">Recent Applications</h3>
         <div className="space-y-2">
           {applications.slice(0, 5).map((app) => (
             <div
@@ -92,7 +92,7 @@ export default function AnalyticsPage({ stats, applications }) {
                   {(app.company || '?')[0].toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">{app.company}</p>
+                  <p className="text-sm font-medium text-dark-100">{app.company}</p>
                   <p className="text-xs text-dark-400">{app.role}</p>
                 </div>
               </div>

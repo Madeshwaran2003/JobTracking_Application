@@ -41,7 +41,7 @@ export default function ApplicationTable({ applications, onEdit, onDelete }) {
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium text-white truncate max-w-[160px]">
+                          <span className="text-sm font-medium text-dark-100 truncate max-w-[160px]">
                             {app.company || '—'}
                           </span>
                           {app.jobLink && (

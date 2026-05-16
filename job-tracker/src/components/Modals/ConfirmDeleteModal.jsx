@@ -24,10 +24,10 @@ export default function ConfirmDeleteModal({ isOpen, onClose, onConfirm, company
               <div className="w-14 h-14 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
                 <AlertTriangle size={24} className="text-red-400" />
               </div>
-              <h3 className="text-base font-semibold text-white mb-2">Delete Application</h3>
+              <h3 className="text-base font-semibold text-dark-100 mb-2">Delete Application</h3>
               <p className="text-sm text-dark-300 mb-1">
                 Are you sure you want to delete the application for{' '}
-                <span className="text-white font-medium">{companyName || 'this company'}</span>?
+                <span className="text-dark-100 font-medium">{companyName || 'this company'}</span>?
               </p>
               <p className="text-xs text-dark-500">This action cannot be undone.</p>
             </div>

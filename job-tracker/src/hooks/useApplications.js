@@ -28,7 +28,11 @@ export function useApplications() {
   }, []);
 
   useEffect(() => {
-    loadApplications();
+    const timeoutId = window.setTimeout(() => {
+      loadApplications();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [loadApplications]);
 
   const handleAdd = useCallback(async (application) => {

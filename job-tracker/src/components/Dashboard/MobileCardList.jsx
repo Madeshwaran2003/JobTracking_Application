@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, MapPin, Calendar, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { ExternalLink, MapPin, Calendar, ChevronRight } from 'lucide-react';
 import StatusBadge from '../UI/StatusBadge';
 import { formatDate } from '../../utils/constants';
 
-export default function MobileCardList({ applications, onEdit, onDelete, onSelect }) {
+export default function MobileCardList({ applications, onSelect }) {
   return (
     <div className="space-y-3">
       <AnimatePresence mode="popLayout">
@@ -25,7 +25,7 @@ export default function MobileCardList({ applications, onEdit, onDelete, onSelec
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-white truncate">
+                    <span className="text-sm font-semibold text-dark-100 truncate">
                       {app.company || '—'}
                     </span>
                     {app.jobLink && (

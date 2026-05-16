@@ -14,26 +14,41 @@ const INITIAL_FORM = {
 };
 
 export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
-  const [form, setForm] = useState(INITIAL_FORM);
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <AddEditModalPanel
+          key={editData?.id || 'new-application'}
+          onClose={onClose}
+          onSubmit={onSubmit}
+          editData={editData}
+        />
+      )}
+    </AnimatePresence>
+  );
+}
+
+function getInitialForm(editData) {
+  if (!editData) {
+    return INITIAL_FORM;
+  }
+
+  return {
+    company: editData.company || '',
+    role: editData.role || '',
+    jobLink: editData.jobLink || '',
+    location: editData.location || '',
+    dateApplied: editData.dateApplied || new Date().toISOString().split('T')[0],
+    status: editData.status || 'Applied',
+    notes: editData.notes || '',
+  };
+}
+
+function AddEditModalPanel({ onClose, onSubmit, editData }) {
+  const [form, setForm] = useState(() => getInitialForm(editData));
   const [statusOpen, setStatusOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const statusRef = useRef(null);
-
-  useEffect(() => {
-    if (editData) {
-      setForm({
-        company: editData.company || '',
-        role: editData.role || '',
-        jobLink: editData.jobLink || '',
-        location: editData.location || '',
-        dateApplied: editData.dateApplied || new Date().toISOString().split('T')[0],
-        status: editData.status || 'Applied',
-        notes: editData.notes || '',
-      });
-    } else {
-      setForm(INITIAL_FORM);
-    }
-  }, [editData, isOpen]);
 
   // Close status dropdown when clicking outside
   useEffect(() => {
@@ -67,9 +82,7 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
   const currentStatusColors = STATUS_COLOR_MAP[form.status] || STATUS_COLOR_MAP['Applied'];
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
+    <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -86,7 +99,7 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
           >
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-glass-border">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-dark-100">
                 {editData ? 'Edit Application' : 'Add Application'}
               </h2>
               <button
@@ -289,8 +302,6 @@ export default function AddEditModal({ isOpen, onClose, onSubmit, editData }) {
               </div>
             </form>
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    </motion.div>
   );
 }

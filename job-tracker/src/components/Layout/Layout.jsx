@@ -11,13 +11,7 @@ export default function Layout({ children, currentPage, onNavigate }) {
     <div className="flex h-screen overflow-hidden bg-dark-900">
       {/* Animated background gradient */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div
-          className="absolute inset-0 opacity-30"
-          style={{
-            background:
-              'radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 50%), radial-gradient(ellipse at 50% 80%, rgba(34, 197, 94, 0.04) 0%, transparent 50%)',
-          }}
-        />
+        <div className="absolute inset-0 opacity-30 app-background" />
       </div>
 
       <Sidebar

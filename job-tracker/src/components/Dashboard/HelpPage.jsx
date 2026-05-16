@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BookOpen, Plus, Search, Filter, Pencil, Trash2, BarChart3, Settings, Database, ExternalLink } from 'lucide-react';
+import { BookOpen, Plus, Search, Pencil, BarChart3, Database } from 'lucide-react';
 
 export default function HelpPage() {
   return (
@@ -71,7 +71,7 @@ export default function HelpPage() {
               <BookOpen size={16} className="text-accent-purple" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-white">Tips</h3>
+              <h3 className="text-sm font-semibold text-dark-100">Tips</h3>
               <p className="text-xs text-dark-400 mt-0.5">Helpful tips for using JobTracker</p>
             </div>
           </div>
@@ -107,7 +107,7 @@ function HelpCard({ icon: Icon, title, steps }) {
           <Icon size={16} className="text-accent-blue" />
         </div>
         <div>
-          <h3 className="text-sm font-semibold text-white">{title}</h3>
+          <h3 className="text-sm font-semibold text-dark-100">{title}</h3>
         </div>
       </div>
       <ol className="space-y-2">
