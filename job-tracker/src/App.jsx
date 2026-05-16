@@ -11,6 +11,7 @@ import AnalyticsPage from './components/Dashboard/AnalyticsPage';
 import SettingsPage from './components/Dashboard/SettingsPage';
 import HelpPage from './components/Dashboard/HelpPage';
 import AuthPage from './components/Auth/AuthPage';
+import ResetPasswordPage from './components/Auth/ResetPasswordPage';
 import AddEditModal from './components/Modals/AddEditModal';
 import ConfirmDeleteModal from './components/Modals/ConfirmDeleteModal';
 import LoadingSpinner from './components/UI/LoadingSpinner';
@@ -27,10 +28,12 @@ export default function App() {
     authLoading,
     authError,
     isAuthEnabled,
+    isRecoveryMode,
     signIn,
     signUp,
     signOut,
     resetPassword,
+    updatePassword,
   } = useAuth();
 
   const {
@@ -70,6 +73,11 @@ export default function App() {
         <LoadingSpinner />
       </div>
     );
+  }
+
+  // User arrived via the password-reset email link
+  if (isRecoveryMode) {
+    return <ResetPasswordPage onUpdatePassword={updatePassword} />;
   }
 
   if (!isAuthEnabled || !user) {
