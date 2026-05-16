@@ -35,9 +35,9 @@ const THEMES = [
   },
   {
     id: 'caramel',
-    name: 'Caramel',
-    description: 'Warm brown workspace with soft cream highlights.',
-    swatches: ['#964e06', '#fae6d2', '#c36a12', '#2f6f73'],
+    name: 'Caramel Cream',
+    description: 'RGB 150, 78, 6 with a soft 250, 230, 210 cream base.',
+    swatches: ['rgb(150, 78, 6)', 'rgb(250, 230, 210)', '#c36a12', '#2f6f73'],
   },
 ];
 
