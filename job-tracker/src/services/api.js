@@ -10,9 +10,19 @@ async function supabaseFetchApplications() {
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error(userError?.message || 'Please sign in to fetch applications.');
+  }
+
   const { data, error } = await supabase
     .from('applications')
     .select('*')
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -58,6 +68,15 @@ async function supabaseUpdateApplication(id, updates) {
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error(userError?.message || 'Please sign in to update applications.');
+  }
+
   const row = transformToSupabase(updates);
   console.log('[Supabase] Updating application:', id, row);
 
@@ -65,6 +84,7 @@ async function supabaseUpdateApplication(id, updates) {
     .from('applications')
     .update(row)
     .eq('id', id)
+    .eq('user_id', user.id)
     .select()
     .single();
 
@@ -80,10 +100,20 @@ async function supabaseDeleteApplication(id) {
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error(userError?.message || 'Please sign in to delete applications.');
+  }
+
   const { error } = await supabase
     .from('applications')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('[Supabase] Delete error:', error.message);
