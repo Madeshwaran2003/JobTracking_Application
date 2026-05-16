@@ -33,6 +33,12 @@ const THEMES = [
     description: 'Warm dark workspace with rose and amber accents.',
     swatches: ['#150d12', '#e11d48', '#f97316', '#06b6d4'],
   },
+  {
+    id: 'caramel',
+    name: 'Caramel',
+    description: 'Warm brown workspace with soft cream highlights.',
+    swatches: ['#964e06', '#fae6d2', '#c36a12', '#2f6f73'],
+  },
 ];
 
 export default function SettingsPage({ theme = 'midnight', onThemeChange }) {
