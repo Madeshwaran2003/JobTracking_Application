@@ -50,7 +50,13 @@ export function useAuth() {
     const supabase = getSupabase();
     if (!supabase) throw new Error('Supabase is not configured.');
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
     if (error) throw new Error(error.message);
   };
 
