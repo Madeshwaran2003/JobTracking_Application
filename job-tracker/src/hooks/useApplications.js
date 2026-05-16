@@ -6,7 +6,7 @@ import {
   deleteApplication,
 } from '../services/api';
 
-export function useApplications() {
+export function useApplications(user) {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -15,6 +15,13 @@ export function useApplications() {
   const [sortBy, setSortBy] = useState('newest');
 
   const loadApplications = useCallback(async () => {
+    if (!user) {
+      setApplications([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -25,7 +32,7 @@ export function useApplications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {

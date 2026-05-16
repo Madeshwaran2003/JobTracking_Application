@@ -27,7 +27,17 @@ async function supabaseAddApplication(application) {
   const supabase = getSupabase();
   if (!supabase) return null;
 
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error(userError?.message || 'Please sign in before adding applications.');
+  }
+
   const row = transformToSupabase(application);
+  row.user_id = user.id;
   console.log('[Supabase] Adding application:', row);
 
   const { data, error } = await supabase

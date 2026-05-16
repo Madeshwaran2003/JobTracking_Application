@@ -10,16 +10,28 @@ import EmptyState from './components/Dashboard/EmptyState';
 import AnalyticsPage from './components/Dashboard/AnalyticsPage';
 import SettingsPage from './components/Dashboard/SettingsPage';
 import HelpPage from './components/Dashboard/HelpPage';
+import AuthPage from './components/Auth/AuthPage';
 import AddEditModal from './components/Modals/AddEditModal';
 import ConfirmDeleteModal from './components/Modals/ConfirmDeleteModal';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 import SearchBar from './components/UI/SearchBar';
 import ToastContainer from './components/UI/Toast';
 import { useApplications } from './hooks/useApplications';
+import { useAuth } from './hooks/useAuth';
 import { useToast } from './hooks/useToast';
 import { STATUS_OPTIONS, SORT_OPTIONS } from './utils/constants';
 
 export default function App() {
+  const {
+    user,
+    authLoading,
+    authError,
+    isAuthEnabled,
+    signIn,
+    signUp,
+    signOut,
+  } = useAuth();
+
   const {
     applications,
     stats,
@@ -34,7 +46,7 @@ export default function App() {
     addApp,
     updateApp,
     deleteApp,
-  } = useApplications();
+  } = useApplications(isAuthEnabled ? user : { id: 'local-user' });
 
   const { toasts, addToast, removeToast } = useToast();
 
@@ -50,6 +62,18 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('job-tracker-theme', theme);
   }, [theme]);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-dark-900 text-dark-300">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isAuthEnabled && !user) {
+    return <AuthPage onSignIn={signIn} onSignUp={signUp} authError={authError} />;
+  }
 
   const handleAdd = async (formData) => {
     try {
@@ -268,7 +292,7 @@ export default function App() {
   );
 
   return (
-    <Layout currentPage={currentPage} onNavigate={setCurrentPage}>
+    <Layout currentPage={currentPage} onNavigate={setCurrentPage} user={user} onSignOut={signOut}>
       <ToastContainer toasts={toasts} removeToast={removeToast} />
 
       <AnimatePresence mode="wait">

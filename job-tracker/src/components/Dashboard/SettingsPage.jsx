@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS applications (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   company TEXT NOT NULL,
   role TEXT NOT NULL,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'Applied',
   date_applied DATE,
   location TEXT,
@@ -95,14 +96,38 @@ CREATE TABLE IF NOT EXISTS applications (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE applications
+  ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE;
+
 CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
 CREATE INDEX IF NOT EXISTS idx_applications_date ON applications(date_applied DESC);
 CREATE INDEX IF NOT EXISTS idx_applications_company ON applications(company);
+CREATE INDEX IF NOT EXISTS idx_applications_user ON applications(user_id);
 
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow full access to applications" ON applications
-  FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow full access to applications" ON applications;
+DROP POLICY IF EXISTS "Users can view own applications" ON applications;
+DROP POLICY IF EXISTS "Users can insert own applications" ON applications;
+DROP POLICY IF EXISTS "Users can update own applications" ON applications;
+DROP POLICY IF EXISTS "Users can delete own applications" ON applications;
+
+CREATE POLICY "Users can view own applications" ON applications
+  FOR SELECT TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "Users can insert own applications" ON applications
+  FOR INSERT TO authenticated
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "Users can update own applications" ON applications
+  FOR UPDATE TO authenticated
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "Users can delete own applications" ON applications
+  FOR DELETE TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
 
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$

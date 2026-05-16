@@ -2,7 +2,7 @@ import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 
-export default function Layout({ children, currentPage, onNavigate }) {
+export default function Layout({ children, currentPage, onNavigate, user, onSignOut }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 1024 : true
   );
@@ -25,6 +25,8 @@ export default function Layout({ children, currentPage, onNavigate }) {
         <Navbar
           onMenuToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
           currentPage={currentPage}
+          user={user}
+          onSignOut={onSignOut}
         />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {children}
