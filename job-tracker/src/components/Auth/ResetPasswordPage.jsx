@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Briefcase, Lock, Loader2, ShieldCheck } from 'lucide-react';
+import { Lock, Loader2, ShieldCheck } from 'lucide-react';
+import ApplyNestLogo from '../UI/ApplyNestLogo';
 
 export default function ResetPasswordPage({ onUpdatePassword }) {
   const [password, setPassword] = useState('');
@@ -35,7 +36,25 @@ export default function ResetPasswordPage({ onUpdatePassword }) {
   return (
     <div className="min-h-screen bg-dark-900 text-dark-100 relative overflow-hidden">
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute inset-0 opacity-40 app-background" />
+        {/* Mobile Background */}
+        <div className="absolute inset-0 sm:hidden">
+          <img 
+            src="/auth-bg-mobile.jpg" 
+            alt="background mobile" 
+            className="w-full h-full object-cover opacity-70"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-dark-900/40 to-dark-900/90" />
+        </div>
+        
+        {/* Desktop Background */}
+        <div className="absolute inset-0 hidden sm:block">
+          <img 
+            src="/auth-bg-desktop.png" 
+            alt="background desktop" 
+            className="w-full h-full object-cover opacity-70"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-dark-900/40 to-dark-900/90" />
+        </div>
       </div>
 
       <main className="relative z-10 min-h-screen flex items-center justify-center px-4 py-8">
@@ -46,9 +65,7 @@ export default function ResetPasswordPage({ onUpdatePassword }) {
           className="w-full max-w-sm rounded-2xl border border-glass-border bg-glass backdrop-blur-xl p-6 shadow-2xl"
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-accent-blue to-accent-purple flex items-center justify-center">
-              <Briefcase size={20} className="text-white" />
-            </div>
+            <ApplyNestLogo />
             <div>
               <h1 className="text-lg font-semibold text-dark-100">ApplyNest</h1>
               <p className="text-xs text-dark-400">Set a new password</p>

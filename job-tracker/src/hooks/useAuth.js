@@ -29,14 +29,21 @@ export function useAuth() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!active) return;
+      
       if (event === 'PASSWORD_RECOVERY') {
-        // User clicked the reset link in their email — show set-new-password UI
+        // User clicked the reset link in their email
         setIsRecoveryMode(true);
         setUser(session?.user || null);
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setIsRecoveryMode(false);
+        setUser(null);
+      } else {
+        // For SIGNED_IN, INITIAL_SESSION, etc.
+        // Do NOT set isRecoveryMode to false here, because Supabase often 
+        // fires SIGNED_IN immediately after PASSWORD_RECOVERY!
         setUser(session?.user || null);
       }
+      
       setAuthError(null);
       setAuthLoading(false);
     });
