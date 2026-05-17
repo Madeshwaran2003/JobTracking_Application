@@ -199,7 +199,7 @@ export default function AuthPage({ onSignIn, onSignUp, onResetPassword, authErro
         <div className="auth-navbar-inner">
           <a href="#top" className="auth-logo-link" aria-label="ApplyNest home">
             <ApplyNestLogo compact />
-            <span className="auth-brand-title">ApplyNest — Smart Job Application Tracker</span>
+            <span className="auth-brand-title">ApplyNest</span>
           </a>
 
           <div className="auth-nav-links">
